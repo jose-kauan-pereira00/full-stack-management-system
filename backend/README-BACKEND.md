@@ -1,76 +1,113 @@
-# Cash API
+# CashAPI
 
 ## Overview
 
-Cash API is a backend service for managing financial accounts, transactions, and OAuth2-secured access. The project provides REST endpoints to handle account records, transaction entries, and user authentication. This README describes how to install, configure, and use the application.
+The **Cash API** is a backend service developed in Java with Spring Boot for comprehensive financial management. The system includes management of categories, people/customers, and financial transactions (income and expenses), and features a robust **OAuth2**-based authentication and authorization system, as well as CORS control and database migrations via Flyway.
 
-## Features
 
-- OAuth2 authentication and authorization
-- CRUD operations for accounts and transactions
-- Protected API endpoints with bearer tokens
-- JSON request/response support
-- Local development and production build scripts
+## Technologies Used (Tech Stack)
 
-## Getting Started
+- Spring Security & OAuth2 Authorization/Resource Server
+- Spring Data JPA
+- Spring WebMVC
 
-### Prerequisites
 
-- Node.js 20 or later
-- npm 10 or later
-- A supported relational database configured in the project
+## Project Structure
 
-### Installation
+```text
+├── docker-compose.yml
+├── Dockerfile
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+├── README-BACKEND.md
+└── src
+├── main
+│   ├── java
+│   │   └── com
+│   │       └── invict
+│   │           └── cash_api
+│   │               └── cash_api
+│   │                   ├── CashApiApplication.java
+│   │                   ├── config/           # Security configurations (OAuth2, ResourceServer) and properties
+│   │                   ├── cors/             # CORS filters for cross-origin requests
+│   │                   ├── event/            # Events and listeners (e.g., publishing created resources)
+│   │                   ├── exceptionhandle/  # Global API exception handling
+│   │                   ├── model/            # JPA entities (Category, Person, Transaction, User, Permission, etc.)
+│   │                   ├── repository/       # Data repositories and custom queries (Criteria API)
+│   │                   ├── resource/         # REST controllers (endpoints for Categories, Persons, Transactions, Tokens)
+│   │                   ├── security/         # User authentication details and password utilities
+│   │                   ├── service/          # Business logic for core entities
+│   │                   └── token/            # Processors and filters for cookie-based Refresh Tokens
+│   └── resources
+│       ├── application-prod.properties
+│       ├── db
+│       │   └── migration/                    # Flyway migration scripts (V01 to V04)
+│       └── messages.properties
+└── test
+└── java
+└── com
+└── invict
+└── cash_api
+└── cash_api
+└── CashApiApplicationTests.java
+```
 
-1. Clone the repository.
-2. Install dependencies:
-   npm install
-3. Create a `.env` file or copy the environment example file with required settings.
-4. Configure the database connection and OAuth2 credentials.
 
-### Running the Application
+## Prerequisites
 
-Start the application in development mode:
+Make sure the following are installed on your machine: 
+**Java Development Kit (JDK) 21** or later 
+**Docker** and **Docker Compose** (if you want to run the database in a container) 
+**Maven** (or use the Maven Wrapper `./mvnw` included in the project)
 
-npm run dev
 
-Build and run for production:
+## How to Execute the Project (Getting Started)
 
-npm run build
-npm start
+### 1. Upload the Database (Docker)
+Use Docker Compose to quickly start the relational database:
+```bash
+docker-compose up -d
+```
 
-## API Documentation
+### 2. Run the Application
+You can run the application using the Maven Wrapper (`mvnw`):
 
-The API exposes several endpoints for account and transaction management. Typical routes include:
+On **Linux / macOS**:
+```bash
+./mvnw spring-boot:run
+```
 
-- `POST /oauth/token` - obtain an OAuth2 access token
-- `GET /accounts` - list accounts
-- `POST /accounts` - create a new account
-- `GET /transactions` - list transactions
-- `POST /transactions` - create a new transaction
-- `PUT /transactions/:id` - update an existing transaction
-- `DELETE /transactions/:id` - delete a transaction
+On **Windows (CMD / PowerShell)**:
+```cmd
+mvnw.cmd spring-boot:run
+```
 
-Use a valid access token for protected requests.
 
-## Authentication
+## Authentication (OAuth2)
 
-This project uses OAuth2 for authentication. Request an access token from the `/oauth/token` endpoint and include it in the `Authorization` header for protected routes:
+The API protects its resources using OAuth2 tokens.
+- The authentication and token issuance flow is managed by the security endpoints configured in `AuthorizationServerConfig` and `TokenResource`.
+- To access protected routes, send the token in the request's HTTP header: 
+```http 
+Authorization: Bearer <your_access_token> 
+```
 
-Authorization: Bearer <access_token>
 
-## Testing
+## Database Migrations (Flyway)
 
-Use an API client such as Thunder Client, Postman, or a similar tool to test the endpoints. Verify that OAuth2 token issuance works and that protected routes reject unauthorized access.
+The project automatically manages database schema versioning through Flyway, using the following initial scripts (`src/main/resources/db/migration/`): 
+`V01__create_and_register_categories.sql` 
+`V02__create_person_table.sql` 
+`V03__create_transactions_table.sql` 
+`V04__create_and_register_users_and_permissions.sql`
+
 
 ## Contributing
 
-To contribute, create an issue or pull request describing the change. Keep code style consistent and update documentation as needed.
-
-## References
+Contributions, issues, and pull requests are welcome! Feel free to open an issue if you find a bug or want to suggest improvements.
 
 
+## References and Acknowledgments
 
-
-## References
-All of this source code was based on a course from the company [Algaworks](https://www.algaworks.com/) and all credits are reserved for them. If you want to know more, you can check your organization [GitHub Algawoks](https://github.com/algaworks).
+This source code was based on and structured around lessons from **[Algaworks](https://www.algaworks.com/)** courses; all credit goes to them. To learn more, visit their official GitHub organization: [Algaworks](https://github.com/algaworks).

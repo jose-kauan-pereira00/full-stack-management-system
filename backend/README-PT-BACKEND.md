@@ -1,78 +1,127 @@
->Aula 10
-
 # Cash API
 
-## Visão Geral
+## Visão Geral (Overview)
 
-Cash API é um serviço backend para gerenciar contas financeiras, transações e acesso protegido por OAuth2. O projeto fornece endpoints REST para manipular registros de contas, lançamentos de transações e autenticação de usuários. Este README descreve como instalar, configurar e usar a aplicação.
+O **Cash API** é um serviço backend desenvolvido em Java com Spring Boot para gerenciamento financeiro completo. O sistema engloba o controle de categorias, pessoas/clientes, lançamentos financeiros (receitas e despesas) e conta com um robusto sistema de autenticação e autorização baseado em **OAuth2**, além de controle de CORS e migrações de banco de dados via Flyway.
 
-## Funcionalidades
+---
 
-- Autenticação e autorização OAuth2
-- Operações CRUD para contas e transações
-- Endpoints de API protegidos com tokens bearer
-- Suporte a requisições/respostas JSON
-- Scripts para desenvolvimento local e build de produção
+## Tecnologias Utilizadas (Tech Stack)
 
-## Começando
+- **Java 21**
+- **Spring Boot 4.0**
+  - Spring Security & OAuth2 Authorization/Resource Server
+  - Spring Data JPA
+  - Spring WebMVC
+- **Flyway** (Gerenciamento e migração de banco de dados SQL)
+- **MariaDB / MySQL** (Banco de dados relacional)
+- **Docker & Docker Compose** (Containerização)
+- **Maven** (Gerenciador de dependências)
 
-### Pré-requisitos
+---
 
-- Node.js 20 ou superior
-- npm 10 ou superior
-- Um banco de dados relacional suportado configurado no projeto
+## Estrutura do Projeto
 
-### Instalação
+```text
+├── docker-compose.yml
+├── Dockerfile
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+├── README-BACKEND.md
+└── src
+    ├── main
+    │   ├── java
+    │   │   └── com
+    │   │       └── invict
+    │   │           └── cash_api
+    │   │               └── cash_api
+    │   │                   ├── CashApiApplication.java
+    │   │                   ├── config/           # Configurações de segurança (OAuth2, ResourceServer) e propriedades
+    │   │                   ├── cors/             # Filtros de CORS para requisições cross-origin
+    │   │                   ├── event/            # Eventos e listeners (ex: publicação de recursos criados)
+    │   │                   ├── exceptionhandle/  # Tratamento global de exceções da API
+    │   │                   ├── model/            # Entidades JPA (Categoria, Pessoa, Lancamento, Usuario, Permissao, etc.)
+    │   │                   ├── repository/       # Repositórios de dados e consultas customizadas (Criteria API)
+    │   │                   ├── resource/         # Controladores REST (Endpoints para Categorias, Pessoas, Lançamentos, Tokens)
+    │   │                   ├── security/         # Detalhes de autenticação de usuários e utilitários de senha
+    │   │                   ├── service/          # Regras de negócio das entidades principais
+    │   │                   └── token/            # Processadores e filtros para Refresh Tokens baseados em Cookies
+    │   └── resources
+    │       ├── application-prod.properties
+    │       ├── db
+    │       │   └── migration/                    # Scripts de migração do Flyway (V01 a V04)
+    │       └── messages.properties
+    └── test
+        └── java
+            └── com
+                └── invict
+                    └── cash_api
+                        └── cash_api
+                            └── CashApiApplicationTests.java
+```
 
-1. Clone o repositório.
-2. Instale as dependências:
-   npm install
-3. Crie um arquivo `.env` ou copie o arquivo de exemplo de ambiente com as configurações necessárias.
-4. Configure a conexão do banco de dados e as credenciais OAuth2.
+---
 
-### Executando a Aplicação
+## Pré-requisitos (Prerequisites)
 
-Start the application in development mode:
+Certifique-se de ter instalado em sua máquina:
+- **Java Development Kit (JDK) 21** ou superior
+- **Docker** e **Docker Compose** (caso queira subir o banco de dados via container)
+- **Maven** (ou utilize o Maven Wrapper `./mvnw` incluso no projeto)
 
-npm run dev
+---
 
-Build and run for production:
+## Como Executar o Projeto (Getting Started)
 
-npm run build
-npm start
+### 1. Subir o Banco de Dados (Docker)
+Utilize o Docker Compose para inicializar o banco de dados relacional rapidamente:
+```bash
+docker-compose up -d
+```
 
-## Documentação da API
+### 2. Executar a Aplicação
+Você pode rodar a aplicação utilizando o Maven Wrapper (`mvnw`):
 
-A API expõe vários endpoints para gerenciamento de contas e transações. Rotas típicas incluem:
+No **Linux / macOS**:
+```bash
+./mvnw spring-boot:run
+```
 
-- `POST /oauth/token` - obter um token de acesso OAuth2
-- `GET /accounts` - listar contas
-- `POST /accounts` - criar uma nova conta
-- `GET /transactions` - listar transações
-- `POST /transactions` - criar uma nova transação
-- `PUT /transactions/:id` - atualizar uma transação existente
-- `DELETE /transactions/:id` - excluir uma transação
+No **Windows (CMD / PowerShell)**:
+```cmd
+mvnw.cmd spring-boot:run
+```
 
-Use um token de acesso válido para requisições protegidas.
+---
 
-## Autenticação
+## Autenticação (OAuth2)
 
-This project uses OAuth2 for authentication. Request an access token from the `/oauth/token` endpoint and include it in the `Authorization` header for protected routes:
+A API protege seus recursos utilizando tokens OAuth2. 
+- O fluxo de autenticação e emissão de tokens é gerenciado pelos endpoints de segurança configurados em `AuthorizationServerConfig` e `TokenResource`.
+- Para acessar rotas protegidas, envie o token obtido no cabeçalho HTTP da requisição:
+  ```http
+  Authorization: Bearer <seu_token_de_acesso>
+  ```
 
-Authorization: Bearer <access_token>
+---
 
-## Testes
+## Migrações de Banco de Dados (Flyway)
 
-Use um cliente de API como Thunder Client, Postman ou ferramenta similar para testar os endpoints. Verifique se a emissão de token OAuth2 funciona e se as rotas protegidas rejeitam acessos não autorizados.
+O projeto gerencia o versionamento do esquema do banco de dados automaticamente através do Flyway com os seguintes scripts iniciais (`src/main/resources/db/migration/`):
+- `V01__criar_e_registrar_categorias.sql`
+- `V02__criar_tabela_pessoa.sql`
+- `V03__criar_tabela_lancamentos.sql`
+- `V04__criar_e_registrar_usuarios_e_permissoes.sql`
+
+---
 
 ## Contribuindo
 
-To contribute, create an issue or pull request describing the change. Keep code style consistent and update documentation as needed.
+Contribuições, issues e pull requests são bem-vindos! Sinta-se à vontade para abrir um problema caso encontre algum bug ou queira sugerir melhorias.
 
-## References
+---
 
+## Referências e Agradecimentos
 
-
-
-## References
-All of this source code was based on a course from the company [Algaworks](https://www.algaworks.com/) and all credits are reserved for them. If you want to know more, you can check your organization [GitHub Algawoks](https://github.com/algaworks).
+Todo este código-fonte foi baseado e estruturado a partir dos ensinamentos dos cursos da **[Algaworks](https://www.algaworks.com/)**, com todos os créditos reservados a eles. Para saber mais, visite a organização oficial no GitHub: [Algaworks](https://github.com/algaworks).
