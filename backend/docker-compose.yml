@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Serviço do Banco de Dados MariaDB
   db:
     image: mariadb:10.11
     container_name: cash-db
@@ -15,14 +14,12 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
 
-  # Serviço da sua API Spring Boot
   app:
     build: .
     container_name: cash-app
     ports:
       - "8080:8080"
     environment:
-      # Repare no "db:3306" no lugar de "localhost:3306". O Docker resolve o nome do serviço automaticamente!
       - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/cash-money-api
       - SPRING_DATASOURCE_USERNAME=cash_user
       - SPRING_DATASOURCE_PASSWORD=123456
